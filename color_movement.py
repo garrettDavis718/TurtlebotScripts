@@ -13,17 +13,24 @@ upper_red = np.array([184,255,255])
 lower_green = np.array([68,100,100])
 upper_green = np.array([88,255,255])
 
+#create node
 class GreenPublisher(Node):
     def __init__(self):
         super().__init__('green_finder_pub')
+        #String publisher for "if green is found"
         self.green_publisher_ = self.create_publisher(String, 'green_finder', 10)
+        #Image publisher for green image mask
         self.green_img_publisher_ = self.create_publisher(Image, 'image_mask', 10)
+        #Image publisher for turtlebot vision
         self.img_publisher_ = self.create_publisher(Image, 'raw_image', 10)
+        #Create timer for node
         timer_period = 0.1
         self.timer = self.create_timer(timer_period, self.timer_callback)
+        #init cap attribute of our node, using cv2
         self.cap = cv2.VideoCapture(0)
+        #enable cv bridge attribute
         self.br = CvBridge()
-
+    #Method for publishing images on time
     def timer_callback(self):
         green_found = String()
         green_found.data = "False"
@@ -33,11 +40,9 @@ class GreenPublisher(Node):
 
         #convert frame to hsv
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        #create masks
-        red_mask = cv2.inRange(hsv, lower_red, upper_red)
+        #create mask
         green_mask = cv2.inRange(hsv, lower_green, upper_green)
         #results after checking mask against frame
-        red_result = cv2.bitwise_and(frame, frame, mask=red_mask)
         green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
         #check if green exists
         #only pubishing color mask if color is found
